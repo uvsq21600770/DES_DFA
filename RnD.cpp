@@ -331,6 +331,23 @@ void perm_Test()
   cout << "After" << endl << order << endl;
 }*/
 
+void SBox_Cutting(string SBox_In, int offset, string SBox_Cut[])
+{
+  for(int i = 0; i < 8; i++)
+  {
+    SBox_Cut[i] = SBox_In.substr(i*offset,offset);
+  }
+
+}
+
+void display_SBox_In_Out(string SBox[])
+{
+  for(int i = 0; i < 8; i++)
+  {
+    cout << "["<< i << "] " << SBox[i] << endl;
+  }
+}
+
 int main()
 {
 
@@ -352,16 +369,30 @@ int main()
 
   R16 = hex2bin(R16);
   F_R16 = hex2bin(F_R16);
+
+  R15 = hex2bin(R15);
+  F_R15 = hex2bin(F_R15);
   //R16 XOR F_R16
-  string SBox_Out = xor_(R16, F_R16);
-
+  string SBox_Out_full = xor_(R16, F_R16);
   //S_out
-  SBox_Out = F_Perm_Inv(SBox_Out);
+  SBox_Out_full = F_Perm_Inv(SBox_Out_full);
 
+  //S_In
   R15 = expend(R15);
   F_R15 = expend(F_R15);
+  string SBox_In_full = xor_(R15, F_R15);
 
-  string SBox_In = xor_(R15, F_R15);
+  //Découpage de SBox_In
+  string SBox_In[8];
+  SBox_Cutting(SBox_In_full, 6, SBox_In);
+  cout << "SBox In:" << endl << SBox_In_full << endl;
+  display_SBox_In_Out(SBox_In);
+
+  //Découpage de SBox_Out
+  string SBox_Out[8];
+  SBox_Cutting(SBox_Out_full, 4, SBox_Out);
+  cout << endl << "SBox Out:" << endl << SBox_Out_full << endl;
+  display_SBox_In_Out(SBox_Out);
 
   // unsigned long int key_prototype = (unsigned long int)18446744073709551615;
   // string key =  int_to_hex(key_prototype);
