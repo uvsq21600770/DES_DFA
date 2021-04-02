@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-void temp()
+void load_Difference_Distribution_Tables(int*** diffTab)
 {
   int DDT[8][64][16] =
   {
@@ -526,24 +526,59 @@ void temp()
       0, 6, 6, 0, 4, 4, 6, 10, 0, 6, 8, 2, 0, 4, 8, 0 }
 
     };
-  for(int k = 0; k < 8; k++)
-  {
-    for(int i = 0; i < 64; i++)
+
+    for(int k = 0; k < 8; k++)
     {
-      for(int j = 0; j < 16; j++)
+      for(int i = 0; i < 64; i++)
       {
-        cout << DDT[k][i][j] << " ";
+        for(int j = 0; j < 16; j++)
+        {
+          diffTab[k][i][j] = DDT[k][i][j];
+        }
       }
-      cout << endl;
     }
-    cout  << endl << endl << endl;
-  }
 
 }
 
-int main()
+int*** allocDDT()
 {
-  temp();
+  int x = 8, y = 64, z = 16;
+  int*** DDT = new int**[x];
+
+  for(int i = 0; i < x; i++)
+  {
+    DDT[i] = new int*[y];
+
+    for(int j = 0; j < y; j++)
+    {
+      DDT[i][j] = new int[z];
+    }
+  }
+
+  return DDT;
+}
+
+
+int test()
+{
+
+ int*** DDT;
+ DDT = allocDDT();
+ load_Difference_Distribution_Tables(DDT);
+
+
+ for(int i = 0; i < 8; i++)
+ {
+   for(int j = 0; j < 64; j++)
+   {
+     for(int k = 0; k < 16; k++)
+     {
+       cout << DDT[i][j][k] << " ";
+     }
+     cout << endl;
+   }
+   cout  << endl << endl;
+ }
 
   return 0;
 }

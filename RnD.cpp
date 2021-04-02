@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
+#include "DifDistrTab.h"
+
 string hex2bin(string s)
 {
     // hexadecimal to binary conversion
@@ -21,7 +23,7 @@ string hex2bin(string s)
     mp['E'] = "1110";
     mp['F'] = "1111";
     string bin = "";
-    for (int i = 0; i < s.size(); i++) {
+    for (long unsigned int i = 0; i < s.size(); i++) {
         bin += mp[s[i]];
     }
     return bin;
@@ -47,7 +49,7 @@ string bin2hex(string s)
     mp["1110"] = "E";
     mp["1111"] = "F";
     string hex = "";
-    for (int i = 0; i < s.length(); i += 4) {
+    for (long unsigned int i = 0; i < s.length(); i += 4) {
         string ch = "";
         ch += s[i];
         ch += s[i + 1];
@@ -84,7 +86,7 @@ string shift_left(string k, int shifts)
 string xor_(string a, string b)
 {
     string ans = "";
-    for (int i = 0; i < a.size(); i++) {
+    for (long unsigned int i = 0; i < a.size(); i++) {
         if (a[i] == b[i]) {
             ans += "0";
         }
@@ -243,10 +245,10 @@ string IP_INV(string CipherHex)
   return bin2hex(cipher);
 }
 
-std::string int_to_hex(unsigned long int i )
+std::string int2hex(unsigned long int i , int flushSize = 16)
 {
   std::stringstream stream;
-  stream << std::setfill ('0') << std::setw(16)
+  stream << std::setfill ('0') << std::setw(flushSize)
          << std::hex << i;
 
   string key = stream.str();
@@ -348,6 +350,26 @@ void display_SBox_In_Out(string SBox[])
   }
 }
 
+int bin2int(string bin)
+{
+  int res = 0;
+  int base = 1;
+  int len = bin.size() - 1;
+  for (int i = len; i >= 0; i--) {
+      res += (bin[i] - 48) * base;
+      base = base * 2;
+  }
+  return res;
+}
+
+void testDDT(int*** DDT, string SB_I[8], string SB_O[8])
+{
+  for(int i = 0; i < 8; i++)
+  {
+      cout << SB_I[i] << "(= " << int2hex(bin2int(SB_I[i]), 2) << ") X " << SB_O[i] << "(= " << int2hex(bin2int(SB_O[i]),2) << ") = " << DDT[i][bin2int(SB_I[i])][bin2int(SB_O[i])] << endl;
+  }
+}
+
 int main()
 {
 
@@ -393,6 +415,12 @@ int main()
   SBox_Cutting(SBox_Out_full, 4, SBox_Out);
   cout << endl << "SBox Out:" << endl << SBox_Out_full << endl;
   display_SBox_In_Out(SBox_Out);
+
+  int*** DDT;
+  DDT = allocDDT();
+  load_Difference_Distribution_Tables(DDT);
+
+  testDDT(DDT, SBox_In, SBox_Out);
 
   // unsigned long int key_prototype = (unsigned long int)18446744073709551615;
   // string key =  int_to_hex(key_prototype);
