@@ -99,6 +99,20 @@ string shift_left(string k, int shifts)
     return k;
 }
 
+string shift_right(string k, int shifts)
+{
+    string s = "";
+    for (int i = 0; i < shifts; i++) {
+        s += k[27];
+        for (int j = 0; j < 27; j++) {
+            s += k[j];
+        }
+        k = s;
+        s = "";
+    }
+    return k;
+}
+
 string xor_(string a, string b)
 {
     string ans = "";
@@ -602,6 +616,80 @@ string checkK16(string K16[8], string ER15)
 
 }
 
+string decompressKey(string K16)
+{
+  int key_comp[48] = { 14, 17, 11, 24, 1, 5,
+                       3, 28, 15, 6, 21, 10,
+                       23, 19, 12, 4, 26, 8,
+                       16, 7, 27, 20, 13, 2,
+                       41, 52, 31, 37, 47, 55,
+                       30, 40, 51, 45, 33, 48,
+                       44, 49, 39, 56, 34, 53,
+                       46, 42, 50, 36, 29, 32 };
+
+   string K16_extended(56, 'x');
+   //K16_extended[i] = K16[key_comp[i]];
+}
+
+void invTest()
+{
+  int key_comp[48] = { 14, 17, 11, 24, 1, 5,
+                       3, 28, 15, 6, 21, 10,
+                       23, 19, 12, 4, 26, 8,
+                       16, 7, 27, 20, 13, 2,
+                       41, 52, 31, 37, 47, 55,
+                       30, 40, 51, 45, 33, 48,
+                       44, 49, 39, 56, 34, 53,
+                       46, 42, 50, 36, 29, 32 };
+
+  string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst";
+  cout << "Initial: " << endl << str << endl << endl;
+
+  /*string test(56, '!');
+  for(int i = 0; i < 56; i++)
+  {
+    test[key_comp[i] - 1] = str[i];
+  }
+
+  string testG = test.substr(0,28);
+  string testD = test.substr(28,28);
+
+  test = testG + testD;
+  cout << "shifted" << endl << test << endl;*/
+
+
+
+  /*string strG = str.substr(0,28);
+  string strD = str.substr(28,28);
+
+  strG = shift_left(strG, 1);
+  strD = shift_left(strD, 1);
+
+  str = strG + strD;
+
+  cout << "Shifted: " << endl <<str << endl << endl;
+  str = permute(str, key_comp, 48);
+  cout << "Permed: " << endl << str << endl << endl;
+
+  string inv_key_comp(56, '!');
+  cout << "Inverted init:" << endl << inv_key_comp << endl;
+  for(int i = 0; i < 48; i++)
+  {
+    inv_key_comp[key_comp[i] - 1] = str[i];
+  }
+  cout << "Inverted filled:" << endl << inv_key_comp << endl;
+
+  string inv_key_compG = inv_key_comp.substr(0,28);
+  string inv_key_compD = inv_key_comp.substr(28,28);
+
+  inv_key_compG = shift_right(inv_key_compG,1);
+  inv_key_compD = shift_right(inv_key_compD,1);
+
+  inv_key_comp = inv_key_compG + inv_key_compD;
+
+  cout << "Inverted R-shifted:" << endl << inv_key_comp << endl;*/
+}
+
 int main()
 {
 
@@ -723,7 +811,9 @@ int main()
   }
   cout << ct << "   " << keyFragmentsCounter << endl;
 
-  string calcFER15 = checkK16(K16, R15);
+  invTest();
+  //string calcFER15 = checkK16(K16, R15);
+
 
   // unsigned long int key_prototype = (unsigned long int)18446744073709551615;
   // string key =  int_to_hex(key_prototype);
