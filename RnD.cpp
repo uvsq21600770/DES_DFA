@@ -463,7 +463,7 @@ string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount)
   return "-1";
 }
 
-void getKeyFragment(int* difPerSBox, string SB_I[8], string SB_O[8], string ER15[8])
+void getKeyFragment(int* difPerSBox, string SB_I[8], string SB_O[8], string ER15[8], string K16[8], bool keyFragmentsAcquired[8], int* keyFragmentsCounter)
 {
   int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
                         0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
@@ -500,12 +500,36 @@ void getKeyFragment(int* difPerSBox, string SB_I[8], string SB_O[8], string ER15
                         2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } };
 
   string Si_I;
-  Si_I = getViablePair(SB_I[1], SB_O[1], s[1], difPerSBox[1]);
-  string K16_i =xor_(Si_I, ER15[1]);
+  for(int i = 0; i < 8; i++)
+  {
+    if(difPerSBox[i] != 0 && keyFragmentsAcquired[i] == false)
+    {
+      Si_I = getViablePair(SB_I[i], SB_O[i], s[i], difPerSBox[i]);
 
-  cout << K16_i << " = " << Si_I << " xor " << ER15[1] << endl;
+      K16[i] = xor_(Si_I, ER15[i]);
+      keyFragmentsAcquired[i] = true;
+      (*keyFragmentsCounter) = (*keyFragmentsCounter) + 1;
+
+      cout << K16[i] << " = " << Si_I << " xor " << ER15[i] << endl;
+    }
+  }
+
+  for(int i = 0; i < 8; i++)
+  {
+    if(difPerSBox[i] != 0)
+    {
+      cout << K16[i] << " ";
+    } else {
+      cout << "xxxxxx ";
+    }
+  }
+  cout << endl;
 }
 
+void checkK16()
+{
+  
+}
 
 int main()
 {
@@ -516,55 +540,115 @@ int main()
   string R16 = C16.substr(8, 8);
   cout << L16 << " " << R16 << endl;
 
-  string faulty_cipher = "47E4CC05273F3139";
-  string F_C16 = IP_INV(faulty_cipher);
-  string F_L16 = F_C16.substr(0, 8);
-  string F_R16 = F_C16.substr(8, 8);
-  cout << F_L16 << " " << F_R16 << endl;
-
   string R15 = R16;
-  string F_R15 = F_R16;
-
-
   R16 = hex2bin(R16);
-  F_R16 = hex2bin(F_R16);
-
   R15 = hex2bin(R15);
-  F_R15 = hex2bin(F_R15);
-  //R16 XOR F_R16
-  string SBox_Out_full = xor_(R16, F_R16);
-  //S_out
-  SBox_Out_full = F_Perm_Inv(SBox_Out_full);
 
   //S_In
   R15 = expend(R15);
-  //cout << "----------------------ER15-----------------" << endl << R15 << endl;
-  F_R15 = expend(F_R15);
-  string SBox_In_full = xor_(R15, F_R15);
 
-  //Découpage de SBox_In
-  string SBox_In[8];
-  SBox_Cutting(SBox_In_full, 6, SBox_In);
-  cout << "SBox In:" << endl << SBox_In_full << endl;
-  display_SBox_In_Out(SBox_In);
+  //The string will contain a binary representation of K16
+  string K16[8];
 
-  //Découpage de SBox_Out
-  string SBox_Out[8];
-  SBox_Cutting(SBox_Out_full, 4, SBox_Out);
-  cout << endl << "SBox Out:" << endl << SBox_Out_full << endl;
-  display_SBox_In_Out(SBox_Out);
+  //Keeps track of which part of K16 we've already recovered
+  int keyFragmentsCounter = 0;
+  bool keyFragmentsAcquired[8];
+  for(int i = 0; i < 8; i++)
+  {
+    keyFragmentsAcquired[i] = false;
+  }
 
+  //Initialize the Difference Distribution Table
   int*** DDT;
   DDT = allocDDT();
   load_Difference_Distribution_Tables(DDT);
 
-  int difPerSBox[8];
+  string faulty_cipher[32] =
+    {
+      "47E4CC05273F3139",
+      "45E3CC05273E3139",
+      "45F1CE45273F3139",
+      "44A1C847373F3139",
+      "45A1CC45353E3139",
+      "44B1CC01273D3139",
+      "45B1C801373F3339",
+      "44B1C800673F313B",
+      "4CB1C801773B3139",
+      "45F9CC00673F3139",
+      "45F1C401672F3139",
+      "05F1DC08273B3138",
+      "05F1CC016F2F3138",
+      "05F1CC0127773138",
+      "45F1DC01273F3938",
+      "45F1DC01277F3070",
+      "25F1CC01237F3079",
+      "45D1CC01233F2179",
+      "45F1EC01273F2039",
+      "51F1CC21233F2139",
+      "41F18D01073F2079",
+      "41F1CD01271F3139",
+      "45F18D01273F1139",
+      "55F18C11273F7119",
+      "D1F18C01263F7139",
+      "4571CC11263F3139",
+      "45F14C11273F3539",
+      "45F4CC91273F7529",
+      "45F4CC11A63F312D",
+      "45F4CC0127BF3129",
+      "45F0CC01273FB12D",
+      "45F0CC41273E31A9"
+    };
 
-  getDifPerSBox(DDT, SBox_In, SBox_Out, difPerSBox);
+  int loop_i = 0;
+  while(keyFragmentsCounter < 8 && loop_i < 32)
+  {
+    string F_C16 = IP_INV(faulty_cipher[loop_i]);
+    string F_L16 = F_C16.substr(0, 8);
+    string F_R16 = F_C16.substr(8, 8);
+    cout << F_L16 << " " << F_R16 << endl;
 
-  string cutER15[8];
-  SBox_Cutting(R15, 6, cutER15);
-  getKeyFragment(difPerSBox, SBox_In, SBox_Out, cutER15);
+
+    string F_R15 = F_R16;
+    F_R16 = hex2bin(F_R16);
+    F_R15 = hex2bin(F_R15);
+    //R16 XOR F_R16
+    string SBox_Out_full = xor_(R16, F_R16);
+    //S_out
+    SBox_Out_full = F_Perm_Inv(SBox_Out_full);
+
+    //cout << "----------------------ER15-----------------" << endl << R15 << endl;
+    F_R15 = expend(F_R15);
+    string SBox_In_full = xor_(R15, F_R15);
+
+    //Découpage de SBox_In
+    string SBox_In[8];
+    SBox_Cutting(SBox_In_full, 6, SBox_In);
+    cout << "SBox In:" << endl << SBox_In_full << endl;
+    display_SBox_In_Out(SBox_In);
+
+    //Découpage de SBox_Out
+    string SBox_Out[8];
+    SBox_Cutting(SBox_Out_full, 4, SBox_Out);
+    cout << endl << "SBox Out:" << endl << SBox_Out_full << endl;
+    display_SBox_In_Out(SBox_Out);
+
+    int difPerSBox[8];
+
+    getDifPerSBox(DDT, SBox_In, SBox_Out, difPerSBox);
+
+    string cutER15[8];
+    SBox_Cutting(R15, 6, cutER15);
+    getKeyFragment(difPerSBox, SBox_In, SBox_Out, cutER15, K16, keyFragmentsAcquired, &keyFragmentsCounter);
+
+    loop_i++;
+  }
+  int ct = 0;
+  for(int i = 0; i < 8; i++)
+  {
+    if(keyFragmentsAcquired[i])
+      ct++;
+  }
+  cout << ct << "   " << keyFragmentsCounter << endl;
   // unsigned long int key_prototype = (unsigned long int)18446744073709551615;
   // string key =  int_to_hex(key_prototype);
   //
