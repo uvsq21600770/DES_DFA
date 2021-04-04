@@ -3,7 +3,7 @@
 using namespace std;
 #include "DifDistrTab.h"
 
-#define cipherAmount 8
+#define cipherAmount 32
 
 string hex2bin(string s)
 {
@@ -577,8 +577,10 @@ string int2bin(int a, int size = 6)
       break;
     case 8:
        bin = bitset<8>(a).to_string();
+       break;
     case 2:
        bin = bitset<2>(a).to_string();
+       break;
   }
 
   return bin;
@@ -798,13 +800,13 @@ string decompressKey(string K16)
    }
    cout << "Inverted filled:" << endl << K16_extended << endl;
 
-   string K16G = K16_extended.substr(0,28);
+   /*string K16G = K16_extended.substr(0,28);
    string K16D = K16_extended.substr(28,28);
 
    K16G = shift_right(K16G, 1);
    K16D = shift_right(K16D, 1);
 
-   K16_extended = K16G + K16D;
+   K16_extended = K16G + K16D;*/
 
    return K16_extended;
 }
@@ -846,7 +848,7 @@ string keyGen(string partial_K16, int currentGuess, int unknownKeyBits[8])
   {
     for(int j = 0; j < 7; j++)
     {
-      parity += partial_K16[7*i + j] - 48;
+      parity += partial_K16[8*i + j] - 48;
     }
     partial_K16[(i+1) * 8 - 1] = 48 + (parity+1)%2;
     parity = 0;
@@ -860,7 +862,6 @@ string DES(string pt, string key)
 
   // Hex to binary
   key = hex2bin(key);
-
   // Parity bit drop table
   int keyp[56] = { 57, 49, 41, 33, 25, 17, 9,
                    1, 58, 50, 42, 34, 26, 18,
@@ -1101,7 +1102,7 @@ F_ER15_full[7]: Tableau d'ER15 des ciphers fautés après expension et avant Dé
 SBox_Out_full[32]: Tableau de P-1(R16 XOR F_R16) avant découpage
 
 */
-int sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SBox_Out_full[cipherAmount], int numSBox)
+string sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SBox_Out_full[cipherAmount], int numSBox)
 {
   int candidateKey[32][65];
   int selectionKey[64];
@@ -1196,24 +1197,28 @@ int sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SBox_
   int part = intersection(selectionKey);
   cout << "PART " << part << "   " << int2hex(part, 2) << " -------------" << endl << endl << endl;
 
-  return 0;
+  return int2bin(part);
 }
 /*
 int main()
 {
-  string plainText = "0123456789ABCDEF";
-  string cipher = "F07704D0741EB2C2";
-  string key = "AABB09182736CCDD";
+  //string plainText = "0123456789ABCDEF";
+  string plainText = "A54DFC08E3B1F339";
+  //string cipher = "F07704D0741EB2C2";
+  string cipher = "08F8DB014BDDB9FF";
+  //string key = "AABB09182736CCDD";
+  string key = "ABBA08192637CDDC";
 
-  cout << DESWithFault(plainText, key) << endl;
+  cout << DES(plainText, key) << endl;
+
+  cout << cipher << endl;
 }*/
 
 
 int main()
 {
-  string plainText = "0123456789ABCDEF";
-  string cipher = "F07704D0741EB2C2";
-  string key = "AABB09182736CCDD";
+  string plainText = "949EAD012F342901";
+  string cipher = "45F1CC01273F3139";
 
   string C16 = IP_INV(cipher);
   string L16 = C16.substr(0, 8);
@@ -1229,7 +1234,7 @@ int main()
   R15 = expend(R15);
 
   //The string will contain a binary representation of K16
-  string K16[8];
+  string K16 = "";
 
   //Keeps track of which part of K16 we've already recovered
   int keyFragmentsCounter = 0;
@@ -1246,15 +1251,38 @@ int main()
 
   string faulty_cipher[cipherAmount] =
     {
-      "A47D55647142A643",
-      "11770483434FA2C0",
-      "F8F680D9618EB69E",
-      "F05225C0F03E93F2",
-      "F2760CD5340FB2C6",
-      "B07784C0705EB68B",
-      "F47F05D0742AB2C2",
-      "ACA261043303E2FE"
-
+      "47E4CC05273F3139",
+      "45E3CC05273E3139",
+      "45F1CE45273F3139",
+      "44A1C847373F3139",
+      "45A1CC45353E3139",
+      "44B1CC01273D3139",
+      "45B1C801373F3339",
+      "44B1C800673F313B",
+      "4CB1C801773B3139",
+      "45F9CC00673F3139",
+      "45F1C401672F3139",
+      "05F1DC08273B3138",
+      "05F1CC016F2F3138",
+      "05F1CC0127773138",
+      "45F1DC01273F3938",
+      "45F1DC01277F3070",
+      "25F1CC01237F3079",
+      "45D1CC01233F2179",
+      "45F1EC01273F2039",
+      "51F1CC21233F2139",
+      "41F18D01073F2079",
+      "41F1CD01271F3139",
+      "45F18D01273F1139",
+      "55F18C11273F7119",
+      "D1F18C01263F7139",
+      "4571CC11263F3139",
+      "45F14C11273F3539",
+      "45F4CC91273F7529",
+      "45F4CC11A63F312D",
+      "45F4CC0127BF3129",
+      "45F0CC01273FB12D",
+      "45F0CC41273E31A9"
     };
 
     string F_ER15[cipherAmount];
@@ -1279,10 +1307,59 @@ int main()
 
     for(int numSBox = 0; numSBox < 8; numSBox++)
     {
-      sbox_Attack(R15, F_ER15, SBox_Out_full, numSBox);
+      K16 += sbox_Attack(R15, F_ER15, SBox_Out_full, numSBox);
     }
 
+    cout << bin2hex(K16) << endl;
+    cout << "K16 regular: " << K16.size() << endl;
+    K16 = decompressKey(K16);
+    cout << "K16 Decomp: " << K16.size() << endl;
+    K16 = INV_PC1(K16);
+    cout << "K16 Inv: " << endl << K16 << endl;
+    //cout << hex2bin(keyOrig) << endl;
+
+/*
+    for(int k = 0; k < 64; k++)
+    {
+      if(K16[k] == 'x')
+        cout << k << ", ";
+    }
+    cout << endl;*/
+
+    int unknownKeyBits[8] = {13, 14, 18, 19, 50, 53, 57, 59};
+    int currentGuess = 0;
+    bool keyFound = false;
+
+    while(currentGuess < 256 && !keyFound)
+    {
+      string Key = keyGen(K16, currentGuess, unknownKeyBits);
+      currentGuess++;
+      Key = bin2hex(Key);
+      string cipherGuess = DES(plainText, Key);
+      if(cipher.compare(cipherGuess) == 0)
+        {
+          cout << "found the key" << endl;
+          cout << Key << endl;
+          keyFound = true;
+        }
+    }
     return 0;
+      /*Key = bin2hex(Key);
+      cout << "Current Guess = " << currentGuess << endl << Key << endl << endl;
+
+      string cipherGuess = DES(plainText, Key);
+      cout << cipherGuess << endl << cipher << endl;
+      if(cipher.compare(cipherGuess) == 0)
+        {
+          cout << "found the key" << endl;
+          keyFound = true;
+        }
+    }
+
+    if(keyFound != true)
+      cout << "Key Not Found" << endl;
+
+    return 0;*/
 /*
   int loop_i = 0;
   while(keyFragmentsCounter < 8 && loop_i < 7)
@@ -1377,7 +1454,7 @@ int main()
   if(keyFound != true)
     cout << "Key Not Found" << endl;*/
 }
-
+//
 // void tmp()
 // {
 //
@@ -1548,81 +1625,4 @@ int main()
 //   cout << endl;
 //
 //   return 0;*/
-// }
-
-// int main()
-// {
-//     // pt is plain text
-//     string pt, key;
-//     /*cout<<"Enter plain text(in hexadecimal): ";
-//     cin>>pt;
-//     cout<<"Enter key(in hexadecimal): ";
-//     cin>>key;*/
-//
-//     pt = "123456ABCD132536";
-//     key = "AABB09182736CCDD";
-//     // Key Generation
-//
-//     // Hex to binary
-//     key = hex2bin(key);
-//
-//     // Parity bit drop table
-//     int keyp[56] = { 57, 49, 41, 33, 25, 17, 9,
-//                      1, 58, 50, 42, 34, 26, 18,
-//                      10, 2, 59, 51, 43, 35, 27,
-//                      19, 11, 3, 60, 52, 44, 36,
-//                      63, 55, 47, 39, 31, 23, 15,
-//                      7, 62, 54, 46, 38, 30, 22,
-//                      14, 6, 61, 53, 45, 37, 29,
-//                      21, 13, 5, 28, 20, 12, 4 };
-//
-//     // getting 56 bit key from 64 bit using the parity bits
-//     key = permute(key, keyp, 56); // key without parity
-//
-//     // Number of bit shifts
-//     int shift_table[16] = { 1, 1, 2, 2,
-//                             2, 2, 2, 2,
-//                             1, 2, 2, 2,
-//                             2, 2, 2, 1 };
-//
-//     // Key- Compression Table
-//     int key_comp[48] = { 14, 17, 11, 24, 1, 5,
-//                          3, 28, 15, 6, 21, 10,
-//                          23, 19, 12, 4, 26, 8,
-//                          16, 7, 27, 20, 13, 2,
-//                          41, 52, 31, 37, 47, 55,
-//                          30, 40, 51, 45, 33, 48,
-//                          44, 49, 39, 56, 34, 53,
-//                          46, 42, 50, 36, 29, 32 };
-//
-//     // Splitting
-//     string left = key.substr(0, 28);
-//     string right = key.substr(28, 28);
-//
-//     vector<string> rkb; // rkb for RoundKeys in binary
-//     vector<string> rk; // rk for RoundKeys in hexadecimal
-//     for (int i = 0; i < 16; i++) {
-//         // Shifting
-//         left = shift_left(left, shift_table[i]);
-//         right = shift_left(right, shift_table[i]);
-//
-//         // Combining
-//         string combine = left + right;
-//
-//         // Key Compression
-//         string RoundKey = permute(combine, key_comp, 48);
-//
-//         rkb.push_back(RoundKey);
-//         rk.push_back(bin2hex(RoundKey));
-//     }
-//
-//     cout << "\nEncryption:\n\n";
-//     string cipher = encrypt(pt, rkb, rk);
-//     cout << "\nCipher Text: " << cipher << endl;
-//
-//     cout << "\nDecryption\n\n";
-//     reverse(rkb.begin(), rkb.end());
-//     reverse(rk.begin(), rk.end());
-//     string text = encrypt(cipher, rkb, rk);
-//     cout << "\nPlain Text: " << text << endl;
 // }
