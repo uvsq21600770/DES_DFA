@@ -4,7 +4,7 @@ PROJECT_SRC = .
 vpath %.cpp $(PROJECT_SRC)
 
 ########################################################################
-SRCS = RnDBeta.cpp
+SRCS = RnDBetaer.cpp
 SRCS += DifDistrTab.cpp
 
 ########################################################################
