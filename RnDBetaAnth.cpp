@@ -603,7 +603,7 @@ int getColumn(string input)
 
 string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int SI_Pair[64], string ER15)
 {
-  cout << "IN = " << SB_I << endl << "OUT = " << SB_O << endl;
+  //cout << "IN = " << SB_I << endl << "OUT = " << SB_O << endl;
 
   string SI, F_SI;
   int pairFound = 0;
@@ -640,7 +640,7 @@ string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int
       SO_xor_F_SO = SO^F_SO;
       if(SO_xor_F_SO == SB_O_int)
       {
-        cout << "pair found: SI = " << SI << " --- F_SI = " << F_SI << "   " << pairFound + 1 << "  " << bin2hex(SI) << endl;
+        //cout << "pair found: SI = " << SI << " --- F_SI = " << F_SI << "   " << pairFound + 1 << "  " << bin2hex(SI) << endl;
         index = bin2int(SI) ^ bin2int(ER15);
         SI_Pair[index]++;
         pairFound++;
@@ -682,7 +682,7 @@ string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int
   //     }
   //   }
   }
-
+  cout << " pairs Found: <" << pairFound << ">" << endl;
   return "-1";
 }
 
@@ -751,7 +751,7 @@ string getKey(int*** DDT, string SB_I_full[cipherAmount], string SB_O_full[ciphe
     {
       SI_Pair[j] = 0;
     }
-
+    cout << "===== Currently in SBox " << numSBox << " ======"  << endl;
 
 
     for(int currentCipher = 0; currentCipher < cipherAmount; currentCipher++)
@@ -766,13 +766,14 @@ string getKey(int*** DDT, string SB_I_full[cipherAmount], string SB_O_full[ciphe
 
       if(dif != 0 && bin2int(SB_O[numSBox]) != 0 && (ER15[numSBox].compare(F_ER15[numSBox]) != 0))
       {
+        cout << "Cipher n°" << currentCipher << " === " << "pair Amount: <" << dif << ">";
         getViablePair(SB_I[numSBox], SB_O[numSBox], s[numSBox], dif , SI_Pair, ER15[numSBox]);
       }
 
 
     }
     fragmentID = intersection(SI_Pair);
-    cout << "PART " << fragmentID << "   " << int2hex(fragmentID, 2) << " -------------" << endl << endl << endl;
+    cout << "FragmentID: " << fragmentID << "   " << int2hex(fragmentID, 2) << endl << endl << endl;
     K16 += int2bin(fragmentID);
   }
 
@@ -1271,13 +1272,32 @@ int main()
 
 int main()
 {
-  string plainText = "BCE92F0D31CD7A54";
-  string cipher = "5CA0DA40C4575E35";
+  string plainText = "64706BDA3B79FDD0";
+  string cipher = "144FED14635AFD89";
 
   string C16 = IP_INV(cipher);
   string L16 = C16.substr(0, 8);
   string R16 = C16.substr(8, 8);
   cout << L16 << " " << R16 << endl;
+
+  int inv_per[32] = { 9, 17, 23, 31,
+                      13, 28, 2, 18,
+                      24, 16, 30, 6,
+                      26, 20, 10, 1,
+                      8, 14, 25, 3,
+                      4, 29, 11, 19,
+                      32, 12, 22, 7,
+                      5, 27, 15, 21 };
+
+  int per[32];
+  for(int i = 0; i < 32; i++)
+  {
+    per[inv_per[i] - 1] = i + 1;
+  }
+  for(int i = 0; i < 32; i++)
+  {
+    cout << per[i] << ", ";
+  } cout << endl; return 0;
 
   string R15 = R16;
   R16 = L16;
@@ -1301,38 +1321,38 @@ int main()
 
   string faulty_cipher[cipherAmount] =
     {
-      "5EA1DA00C4565E31",
-      "5CB2DA40C4565E35",
-      "5CA0D844C4565E35",
-      "5DF0DE02D4575E35",
-      "5CE0DA44D6565E35",
-      "5DE0DA40C4555E35",
-      "5CE0DE40D4575C35",
-      "5DE0DE4184575E37",
-      "55E0DE4094435E35",
-      "5CA8DA40C4435E35",
-      "5CA0D24084475E35",
-      "1CA0CA49C4035E35",
-      "1CA0CA408C435E34",
-      "5CA0CA40C41F5E34",
-      "1CA0CA40C4175635",
-      "5CA0CA40C4575F7C",
-      "3CA0DA40C4175F74",
-      "5C80DA40C0575F35",
-      "5CA0FA40C0574E75",
-      "58A09A60C0575E75",
-      "58A09B40E0574F35",
-      "4CA09B40C4775E35",
-      "58A0DB40C4577E35",
-      "4CA09A50C4575A15",
-      "D8A09B50C5575E35",
-      "5C20DA40C5571A35",
-      "5CA05A50C4571E35",
-      "5CA1DAD0C5571A21",
-      "5CA5DA5045571E25",
-      "5CA1DA40C4D75E21",
-      "5CA5DA40C457DE35",
-      "5CA4DA00C4565EA5"
+      "164EED50635AFD8D",
+      "144DED50635BFD89",
+      "145FEF50635AFD89",
+      "151FE956735AFD89",
+      "151FED54715BFD89",
+      "150FE9147358FD89",
+      "154FED14735AFF89",
+      "140FE915234EFD8B",
+      "1C4FE915335AFD89",
+      "1447ED15234AFD89",
+      "144FE515235EFD89",
+      "544FFD1C234AFD89",
+      "544FFD156B4AFD89",
+      "544FED146312FD88",
+      "544FFD14631AF589",
+      "144FFD14671AED80",
+      "744FFD14671AFCC8",
+      "146FED14675AFC89",
+      "144FCD14635AECC9",
+      "004FEC34635AEC89",
+      "104FEC14435AECC9",
+      "004FAD14637AFD89",
+      "104FAC14635ADD89",
+      "044FAC14635AB9A9",
+      "804FED14625ABD89",
+      "14CFED04625AF989",
+      "144F6D14635AB989",
+      "144AED84635AB989",
+      "144EED04E25AFD8D",
+      "144BED1463DAFD8D",
+      "144FED14635A7D9D",
+      "144AED54635BFD0D"
     };
 
     string F_ER15[cipherAmount];
@@ -1361,6 +1381,12 @@ int main()
     K16 = getKey(DDT, SBox_In_full, SBox_Out_full, R15, F_ER15);
     cout << "K16" << endl << K16 << endl;
     cout << "K16" << endl << bin2hex(K16) << endl;
+
+
+    return 0;
+
+
+
     //cout << "Real K16" << endl << hex2bin("181C5D75C66D") << endl;
 
     cout << bin2hex(K16) << endl;

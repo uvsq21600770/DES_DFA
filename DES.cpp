@@ -206,7 +206,7 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
             swap(left, right);
         }
         cout << "Round " << i + 1 << " " << bin2hex(left) << " "
-             << bin2hex(right) << " " /*<< rk[i]*/ << endl;
+             << bin2hex(right) << " " << rk[i] << endl << rkb[i] << endl;
     }
 
     // Combination
@@ -235,8 +235,8 @@ int main()
     cout<<"Enter key(in hexadecimal): ";
     cin>>key;*/
 
-    pt = "123456ABCD132536";
-    key = "AABB09182736CCDD";
+    pt = "BCE92F0D31CD7A54";
+    key = "B3134AC1AD5EE526";
     // Key Generation
 
     // Hex to binary
@@ -274,6 +274,7 @@ int main()
     // Splitting
     string left = key.substr(0, 28);
     string right = key.substr(28, 28);
+    cout << "C0 = " << bin2hex(left) << " --- D0 = " << bin2hex(right) << endl;
 
     vector<string> rkb; // rkb for RoundKeys in binary
     vector<string> rk; // rk for RoundKeys in hexadecimal
@@ -281,6 +282,7 @@ int main()
         // Shifting
         left = shift_left(left, shift_table[i]);
         right = shift_left(right, shift_table[i]);
+        cout << "C" << i+1 << " = " << bin2hex(left) << " --- D" << i+1 <<" = " << bin2hex(right) << endl;
 
         // Combining
         string combine = left + right;
@@ -290,6 +292,7 @@ int main()
 
         rkb.push_back(RoundKey);
         rk.push_back(bin2hex(RoundKey));
+
     }
 
     cout << "\nEncryption:\n\n";
@@ -301,4 +304,5 @@ int main()
     reverse(rk.begin(), rk.end());
     string text = encrypt(cipher, rkb, rk);
     cout << "\nPlain Text: " << text << endl;
+    cout << "\nPlain Keyt: " << endl << key << endl;
 }
