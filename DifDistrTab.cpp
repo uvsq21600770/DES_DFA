@@ -1,6 +1,11 @@
 #include <iostream>
 using namespace std;
 
+/*
+  Difference distribution table
+  Recovered using OCR detection so it was extremely fast despite the large
+  size of the matrixes
+*/
 void load_Difference_Distribution_Tables(int*** diffTab)
 {
   int DDT[8][64][16] =
@@ -540,6 +545,9 @@ void load_Difference_Distribution_Tables(int*** diffTab)
 
 }
 
+/*
+  Allocates the memory for the DDT
+*/
 int*** allocDDT()
 {
   int x = 8, y = 64, z = 16;
@@ -558,7 +566,9 @@ int*** allocDDT()
   return DDT;
 }
 
-
+/*
+  Honestly useless but it's staying.
+*/
 int test()
 {
 

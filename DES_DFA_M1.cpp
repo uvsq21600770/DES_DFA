@@ -5,6 +5,9 @@ using namespace std;
 
 #define cipherAmount 32
 
+/*
+ Convert an Hexadecimal word into a Binary word
+*/
 string hex2bin(string s)
 {
     // hexadecimal to binary conversion
@@ -31,6 +34,11 @@ string hex2bin(string s)
     }
     return bin;
 }
+
+/*
+ Convert a Binary word into an Hexadecimal word
+ Can convert 6bits words and 4 bits words
+*/
 string bin2hex(string s)
 {
     // binary to hexadecimal conversion
@@ -78,6 +86,9 @@ string bin2hex(string s)
     return hex;
 }
 
+/*
+  Simple permutation fonction with offset 1 since all our matrixes start at 1
+*/
 string permute(string k, int* arr, int n)
 {
     string per = "";
@@ -87,6 +98,9 @@ string permute(string k, int* arr, int n)
     return per;
 }
 
+/*
+  Circular Left Shift of a string
+*/
 string shift_left(string k, int shifts)
 {
     string s = "";
@@ -101,6 +115,9 @@ string shift_left(string k, int shifts)
     return k;
 }
 
+/*
+  Xor of two binary words represented as strings
+*/
 string xor_(string a, string b)
 {
     string ans = "";
@@ -115,7 +132,9 @@ string xor_(string a, string b)
     return ans;
 }
 
-
+/*
+  Conversion from a binary word to it's integer representation
+*/
 int bin2int(string bin)
 {
   int res = 0;
@@ -128,6 +147,9 @@ int bin2int(string bin)
   return res;
 }
 
+/*
+  Conversion of an int into different sizes of 0 flushed binary string
+*/
 string int2bin(int a, int size = 6)
 {
   string bin;
@@ -150,6 +172,10 @@ string int2bin(int a, int size = 6)
   return bin;
 }
 
+/*
+  For the Sbox
+  Extracts the row corresponding to the input
+*/
 int getRow(string input)
 {
   string row = "";
@@ -158,6 +184,10 @@ int getRow(string input)
   return bin2int(row);
 }
 
+/*
+  For the Sbox
+  Extracts the column corresponding to the input
+*/
 int getColumn(string input)
 {
   string column = "";
@@ -165,7 +195,9 @@ int getColumn(string input)
   return bin2int(column);
 }
 
-
+/*
+  Returns Sbox_numSbox(input)
+*/
 int execSBox(int input, int numSBox)
 {
   int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
@@ -209,6 +241,9 @@ int execSBox(int input, int numSBox)
   return s[numSBox][row][col];
 }
 
+/*
+  Encrypts a message following the DES specifications
+*/
 string encrypt(string pt, vector<string> rkb, vector<string> rk)
 {
     // Hexadecimal to binary
@@ -297,6 +332,9 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
     return cipher;
 }
 
+/*
+  Apply the initial permutation to the Cipher
+*/
 string IP_INV(string CipherHex)
 {
 
@@ -313,6 +351,9 @@ string IP_INV(string CipherHex)
   return bin2hex(cipher);
 }
 
+/*
+  Convert an int into an hexadecimal word, flushed with 0s
+*/
 string int2hex(unsigned long int i , int flushSize = 16)
 {
   stringstream stream;
@@ -326,6 +367,10 @@ string int2hex(unsigned long int i , int flushSize = 16)
   return key;
 }
 
+/*
+  Apply P^-1 on the cipher
+  It's the P from the F function
+*/
 string F_Perm_Inv(string cipher)
 {
   int inv_per[32] = { 9, 17, 23, 31,
@@ -342,6 +387,10 @@ string F_Perm_Inv(string cipher)
   return res;
 }
 
+/*
+  Expend a word from 32 bits to 48
+  It's the Extension from the F function
+*/
 string expend(string word)
 {
   int exp_d[48] = { 32, 1, 2, 3, 4, 5, 4, 5,
@@ -355,6 +404,11 @@ string expend(string word)
   return expended_word;
 }
 
+/*
+  Badly named I'm affraid
+  Cuts String into smaller ones and put them in an array
+  Used to separate things for each SBox
+*/
 void SBox_Cutting(string SBox_In, int offset, string SBox_Cut[])
 {
   for(int i = 0; i < 8; i++)
@@ -364,6 +418,9 @@ void SBox_Cutting(string SBox_In, int offset, string SBox_Cut[])
 
 }
 
+/*
+  Displays something, no time to check if it's still relevent
+*/
 void display_SBox_In_Out(string SBox[])
 {
   for(int i = 0; i < 8; i++)
@@ -372,6 +429,9 @@ void display_SBox_In_Out(string SBox[])
   }
 }
 
+/*
+  Returns the amount of pairs per SB_I/SB_O couple for a specific Sbox i
+*/
 void getDifPerSBox(int*** DDT, string SB_I[8], string SB_O[8], int* difPerSBox)
 {
   for(int i = 0; i < 8; i++)
@@ -380,7 +440,10 @@ void getDifPerSBox(int*** DDT, string SB_I[8], string SB_O[8], int* difPerSBox)
   }
 }
 
-string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int SI_Pair[64], string ER15)
+/*
+  Find all viable pairs for a given Sbox and Cipher.
+*/
+void getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int SI_Pair[64], string ER15)
 {
 
   string SI, F_SI;
@@ -422,26 +485,32 @@ string getViablePair(string SB_I, string SB_O, int s[4][16], int pairAmount, int
       ct++;
     }
   }
-
-  return "-1";
 }
 
-int intersection(int selectionKey[64])
+/*
+  Technically not an intersection anymore
+  Finds the index of the max in the SI_Pair array
+  That index is our key fragment in integer form
+*/
+int intersection(int SI_Pair[64])
 {
-  int rang_max = 0;
-  int max = selectionKey[0];
+  int max_index = 0;
+  int max = SI_Pair[0];
   for(int i = 0; i < 64; i++)
   {
-    if(max < selectionKey[i])
+    if(max < SI_Pair[i])
     {
-      max = selectionKey[i];
-      rang_max = i;
+      max = SI_Pair[i];
+      max_index = i;
     }
   }
 
-  return rang_max;
+  return max_index;
 }
 
+/*
+  Finds the DES Key
+*/
 string getKey(int*** DDT, string SB_I_full[cipherAmount], string SB_O_full[cipherAmount], string ER15_full, string F_ER15_full[cipherAmount])
 {
   string K16 = "";
@@ -520,6 +589,9 @@ string getKey(int*** DDT, string SB_I_full[cipherAmount], string SB_O_full[ciphe
 
 }
 
+/*
+  Applies PC2^-1 on K16 and stores the result over a 'x' initialized 56bits string
+*/
 string decompressKey(string K16)
 {
   int key_comp[48] = { 14, 17, 11, 24, 1, 5,
@@ -540,6 +612,9 @@ string decompressKey(string K16)
    return K16_extended;
 }
 
+/*
+  Applies PC1^-1 on K16 and stores the result over a 'y' initialized 64bits string
+*/
 string INV_PC1(string K16_extended)
 {
   int keyp[56] = { 57, 49, 41, 33, 25, 17, 9,
@@ -559,6 +634,12 @@ string INV_PC1(string K16_extended)
   return K16_PC1;
 }
 
+/*
+  I always wanted to call a function like that, I only need some music to go along
+  Generates a Key from our current pattern using an integer guess by replacing
+  each 'x' in our pattern by a different bit of our guess starting with the rightmost one.
+  Then computes the parity bits and return K16.
+*/
 string keyGen(string partial_K16, int currentGuess, int unknownKeyBits[8])
 {
   string guess = int2bin(currentGuess,8);
@@ -580,6 +661,9 @@ string keyGen(string partial_K16, int currentGuess, int unknownKeyBits[8])
   return partial_K16;
 }
 
+/*
+  Applies the DES to a plainText with a specific Key
+*/
 string DES(string pt, string key)
 {
 
@@ -658,6 +742,7 @@ int main()
   //S_In
   R15 = expend(R15);
 
+  //Loads the DDT
   int*** DDT;
   DDT = allocDDT();
   load_Difference_Distribution_Tables(DDT);
@@ -665,6 +750,7 @@ int main()
   //The string will contain a binary representation of K16
   string K16;
 
+  //Our cipher list
   string faulty_cipher[cipherAmount] =
     {
       "47E4CC05273F3139",
@@ -705,6 +791,7 @@ int main()
     string SBox_Out_full[cipherAmount];
     string SBox_In_full[cipherAmount];
 
+    //For each cipher we recover F_R15, F_R16, F_SI and F_SO
     for(int i = 0; i < cipherAmount; i++)
     {
       string F_C16 = IP_INV(faulty_cipher[i]);
@@ -722,19 +809,22 @@ int main()
       SBox_In_full[i] = xor_(R15, F_ER15[i]);
     }
 
-    //Real K16: 181C5D75C66D
+    //We recover K16
     K16 = getKey(DDT, SBox_In_full, SBox_Out_full, R15, F_ER15);
 
+    //Reverse Key schedule
     cout << "K16 regular: " << K16.size() << endl << K16 << endl;
     K16 = decompressKey(K16);
     cout << "K16 Decomp: " << K16.size() << endl << K16 << endl;
     K16 = INV_PC1(K16);
     cout << "K16 Inv: " << K16.size() << endl << K16 << endl;
+    //we now have the Key pattern
 
     int unknownKeyBits[8] = {13, 14, 18, 19, 50, 53, 57, 59};
     int currentGuess = 0;
     bool keyFound = false;
 
+    //We brute force K with our pattern
     while(currentGuess < 256 && !keyFound)
     {
       string Key = keyGen(K16, currentGuess, unknownKeyBits);
