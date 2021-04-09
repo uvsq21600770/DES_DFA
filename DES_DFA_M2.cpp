@@ -77,6 +77,41 @@ string bin2hex(string s)
     return hex;
 }
 
+
+int bin2int(string bin)
+{
+  int res = 0;
+  int base = 1;
+  int len = bin.size() - 1;
+  for (int i = len; i >= 0; i--) {
+      res += (bin[i] - 48) * base;
+      base = base * 2;
+  }
+  return res;
+}
+
+string int2bin(int a, int size = 6)
+{
+  string bin;
+  switch(size)
+  {
+    case 6:
+       bin = bitset<6>(a).to_string();
+      break;
+    case 4:
+       bin = bitset<4>(a).to_string();
+      break;
+    case 8:
+       bin = bitset<8>(a).to_string();
+       break;
+    case 2:
+       bin = bitset<2>(a).to_string();
+       break;
+  }
+
+  return bin;
+}
+
 string permute(string k, int* arr, int n)
 {
     string per = "";
@@ -113,6 +148,65 @@ string xor_(string a, string b)
     }
     return ans;
 }
+
+int getRow(string input)
+{
+  string row = "";
+  row += input[0];
+  row += input[5];
+  return bin2int(row);
+}
+
+int getColumn(string input)
+{
+  string column = "";
+  column = input.substr(1,4);
+  return bin2int(column);
+}
+
+int execSBox(int input, int numSBox)
+{
+  int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
+                        0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
+                        4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
+                        15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13 },
+                      { 15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10,
+                        3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5,
+                        0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15,
+                        13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9 },
+
+                      { 10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8,
+                        13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1,
+                        13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7,
+                        1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12 },
+                      { 7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15,
+                        13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
+                        10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4,
+                        3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14 },
+                      { 2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9,
+                        14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6,
+                        4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14,
+                        11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3 },
+                      { 12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11,
+                        10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8,
+                        9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6,
+                        4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13 },
+                      { 4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1,
+                        13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6,
+                        1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2,
+                        6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12 },
+                      { 13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7,
+                        1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2,
+                        7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
+                        2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } };
+
+  string input_string = int2bin(input);
+  int row = getRow(input_string);
+  int col = getColumn(input_string);
+
+  return s[numSBox][row][col];
+}
+
 string encrypt(string pt, vector<string> rkb, vector<string> rk)
 {
     // Hexadecimal to binary
@@ -129,13 +223,11 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                              63, 55, 47, 39, 31, 23, 15, 7 };
     // Initial Permutation
     pt = permute(pt, initial_perm, 64);
-    //cout << "After initial permutation: " << bin2hex(pt) << endl;
 
     // Splitting
     string left = pt.substr(0, 32);
     string right = pt.substr(32, 32);
-    //cout << "After splitting: L0=" << bin2hex(left)
-      //   << " R0=" << bin2hex(right) << endl;
+
 
     // Expansion D-box Table
     int exp_d[48] = { 32, 1, 2, 3, 4, 5, 4, 5,
@@ -144,41 +236,6 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                       16, 17, 18, 19, 20, 21, 20, 21,
                       22, 23, 24, 25, 24, 25, 26, 27,
                       28, 29, 28, 29, 30, 31, 32, 1 };
-
-    // S-box Table
-    int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
-                          0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
-                          4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
-                          15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13 },
-                        { 15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10,
-                          3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5,
-                          0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15,
-                          13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9 },
-
-                        { 10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8,
-                          13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1,
-                          13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7,
-                          1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12 },
-                        { 7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15,
-                          13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
-                          10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4,
-                          3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14 },
-                        { 2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9,
-                          14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6,
-                          4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14,
-                          11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3 },
-                        { 12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11,
-                          10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8,
-                          9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6,
-                          4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13 },
-                        { 4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1,
-                          13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6,
-                          1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2,
-                          6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12 },
-                        { 13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7,
-                          1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2,
-                          7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
-                          2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } };
 
     // Straight Permutation Table
     int per[32] = { 16, 7, 20, 21,
@@ -190,7 +247,6 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
                     19, 13, 30, 6,
                     22, 11, 4, 25 };
 
-    cout << endl;
     for (int i = 0; i < 16; i++) {
         // Expansion D-box
         string right_expanded = permute(right, exp_d, 48);
@@ -201,16 +257,9 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
         // S-boxes
         string op = "";
         for (int i = 0; i < 8; i++) {
-            int row = 2 * int(x[i * 6] - '0') + int(x[i * 6 + 5] - '0');
-            int col = 8 * int(x[i * 6 + 1] - '0') + 4 * int(x[i * 6 + 2] - '0') + 2 * int(x[i * 6 + 3] - '0') + int(x[i * 6 + 4] - '0');
-            int val = s[i][row][col];
-            op += char(val / 8 + '0');
-            val = val % 8;
-            op += char(val / 4 + '0');
-            val = val % 4;
-            op += char(val / 2 + '0');
-            val = val % 2;
-            op += char(val + '0');
+
+            int val = execSBox(bin2int(x.substr(i*6,6)), i);
+            op += int2bin(val, 4);
         }
         // Straight D-box
         op = permute(op, per, 32);
@@ -224,8 +273,8 @@ string encrypt(string pt, vector<string> rkb, vector<string> rk)
         if (i != 15) {
             swap(left, right);
         }
-        cout << "Round " << i + 1 << " " << bin2hex(left) << " "
-            << bin2hex(right) << " " << rk[i] << endl;
+        /*cout << "Round " << i + 1 << " " << bin2hex(left) << " "
+            << bin2hex(right) << " " << rk[i] << endl;*/
     }
 
     // Combination
@@ -262,10 +311,10 @@ string IP_INV(string CipherHex)
   return bin2hex(cipher);
 }
 
-std::string int2hex(unsigned long int i , int flushSize = 16)
+string int2hex(unsigned long int i , int flushSize = 16)
 {
   std::stringstream stream;
-  stream << std::setfill ('0') << std::setw(flushSize)
+  stream << setfill ('0') << std::setw(flushSize)
          << std::hex << i;
 
   string key = stream.str();
@@ -322,55 +371,6 @@ void display_SBox_In_Out(string SBox[])
   }
 }
 
-int bin2int(string bin)
-{
-  int res = 0;
-  int base = 1;
-  int len = bin.size() - 1;
-  for (int i = len; i >= 0; i--) {
-      res += (bin[i] - 48) * base;
-      base = base * 2;
-  }
-  return res;
-}
-
-string int2bin(int a, int size = 6)
-{
-  string bin;
-  switch(size)
-  {
-    case 6:
-       bin = bitset<6>(a).to_string();
-      break;
-    case 4:
-       bin = bitset<4>(a).to_string();
-      break;
-    case 8:
-       bin = bitset<8>(a).to_string();
-       break;
-    case 2:
-       bin = bitset<2>(a).to_string();
-       break;
-  }
-
-  return bin;
-}
-
-int getRow(string input)
-{
-  string row = "";
-  row += input[0];
-  row += input[5];
-  return bin2int(row);
-}
-
-int getColumn(string input)
-{
-  string column = "";
-  column = input.substr(1,4);
-  return bin2int(column);
-}
-
 string decompressKey(string K16)
 {
   int key_comp[48] = { 14, 17, 11, 24, 1, 5,
@@ -383,13 +383,13 @@ string decompressKey(string K16)
                        46, 42, 50, 36, 29, 32 };
 
    string K16_extended(56, 'x');
-   cout << "K16:" << endl << K16 << endl;
-   cout << "Inverted init:" << endl << K16_extended << endl;
+   //cout << "K16:" << endl << K16 << endl;
+   //cout << "Inverted init:" << endl << K16_extended << endl;
    for(int i = 0; i < 48; i++)
    {
      K16_extended[key_comp[i] - 1] = K16[i];
    }
-   cout << "Inverted filled:" << endl << K16_extended << endl;
+   //cout << "Inverted filled:" << endl << K16_extended << endl;
 
    return K16_extended;
 }
@@ -404,27 +404,24 @@ string INV_PC1(string K16_extended)
                    7, 62, 54, 46, 38, 30, 22,
                    14, 6, 61, 53, 45, 37, 29,
                    21, 13, 5, 28, 20, 12, 4 };
-  string K16_PC1(64, '!');
+  string K16_PC1(64, 'y');
   for(int i = 0; i < 56; i++)
   {
     K16_PC1[keyp[i] - 1] = K16_extended[i];
   }
-  cout << "PC1-1" << endl;
-  cout << K16_extended << endl;
-  cout << K16_PC1 << endl << endl;
   return K16_PC1;
 }
 
 string keyGen(string partial_K16, int currentGuess, int unknownKeyBits[8])
 {
   string guess = int2bin(currentGuess,8);
-  cout << "guess is" << guess << endl;
-  cout << "Orig Partial K16" << endl << partial_K16 << endl;
+  //cout << "guess is" << guess << endl;
+  //cout << "Orig Partial K16" << endl << partial_K16 << endl;
   for(int i = 0; i < 8; i++)
   {
       partial_K16[unknownKeyBits[i]] = guess[i];
   }
-  cout << "partial K16 is" << endl << partial_K16 << endl;
+  //cout << "partial K16 is" << endl << partial_K16 << endl;
   int parity = 0;
 
   for(int i = 0; i < 8; i++)
@@ -436,7 +433,7 @@ string keyGen(string partial_K16, int currentGuess, int unknownKeyBits[8])
     partial_K16[(i+1) * 8 - 1] = 48 + (parity+1)%2;
     parity = 0;
   }
-  cout << partial_K16.size() << endl;
+  //cout << partial_K16.size() << endl;
   return partial_K16;
 }
 
@@ -557,48 +554,6 @@ void reverseSBox(int SO, int numSBox, string SI[])
    }
 }
 
-int execSBox(int input, int numSBox)
-{
-  int s[8][4][16] = { { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
-                        0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
-                        4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0,
-                        15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13 },
-                      { 15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10,
-                        3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5,
-                        0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15,
-                        13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9 },
-
-                      { 10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8,
-                        13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1,
-                        13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7,
-                        1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12 },
-                      { 7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15,
-                        13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9,
-                        10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4,
-                        3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14 },
-                      { 2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9,
-                        14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6,
-                        4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14,
-                        11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3 },
-                      { 12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11,
-                        10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8,
-                        9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6,
-                        4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13 },
-                      { 4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1,
-                        13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6,
-                        1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2,
-                        6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12 },
-                      { 13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7,
-                        1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2,
-                        7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
-                        2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 } };
-
-  string input_string = int2bin(input);
-  int row = getRow(input_string);
-  int col = getColumn(input_string);
-
-  return s[numSBox][row][col];
-}
 
 int intersection(int selectionKey[64])
 {
@@ -624,18 +579,10 @@ SBox_Out_full[32]: Tableau de P-1(R16 XOR F_R16) avant découpage
 */
 string sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SBox_Out_full[cipherAmount], int numSBox)
 {
-  int candidateKey[32][65];
-  int selectionKey[64];
-  for(int i = 0; i < 32; i++)
+  int fragmentID[64];
+  for(int i = 0; i < 64; i++)
   {
-    for(int j = 0; j < 64; j++)
-    {
-      candidateKey[i][j] = 0;
-    }
-
-    selectionKey[i] = 0;
-    selectionKey[i+32] = 0;
-    candidateKey[i][64] = 1;
+    fragmentID[i] = 0;
   }
 
   bool skip = false;
@@ -655,13 +602,11 @@ string sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SB
     if(bin2int(SBox_Out[currentCipher][numSBox]) == 0)
     {
       skip = true;
-      candidateKey[currentCipher][64] = 0;
     }
 
     if(ER15_full.compare(F_ER15[currentCipher][numSBox]) == 0)
     {
       skip = true;
-      candidateKey[currentCipher][64] = 0;
     }
 
     if(!skip)
@@ -684,8 +629,7 @@ string sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SB
 
           if(bin2int(SBox_Out[currentCipher][numSBox]) == (So_F_ER15[k] ^ SO))
           {
-            candidateKey[currentCipher][K16_fragment[k]]++;
-            selectionKey[K16_fragment[k]]++;
+            fragmentID[K16_fragment[k]]++;
           }
 
         }
@@ -694,30 +638,9 @@ string sbox_Attack(string ER15_full, string F_ER15_full[cipherAmount], string SB
 
   }
 
-  cout << "Possible Sub-Keys fragments for SBox " << numSBox << endl;
+  int fragment = intersection(fragmentID);
 
-  for(int currentCipher = 0; currentCipher < cipherAmount; currentCipher++)
-  {
-    int ct = 0;
-    if(candidateKey[currentCipher][64] == 1)
-    {
-      cout << "On cipher n°" << currentCipher << endl;
-      for(int j = 0; j < 64; j++)
-      {
-        if(candidateKey[currentCipher][j] != 0)
-        {
-          ct++;
-          cout << int2hex(j, 2) << "   " << int2bin(j) << endl;
-        }
-      }
-      cout << "Amount of possible fragments:" << ct << endl << endl;
-    }
-  }
-
-  int part = intersection(selectionKey);
-  cout << "PART " << part << "   " << int2hex(part, 2) << " -------------" << endl << endl << endl;
-
-  return int2bin(part);
+  return int2bin(fragment);
 }
 
 
@@ -729,7 +652,7 @@ int main()
   string C16 = IP_INV(cipher);
   string L16 = C16.substr(0, 8);
   string R16 = C16.substr(8, 8);
-  cout << L16 << " " << R16 << endl;
+  //cout << L16 << " " << R16 << endl;
 
   string R15 = R16;
   R16 = L16;
@@ -780,7 +703,6 @@ int main()
 
     string F_ER15[cipherAmount];
     string SBox_Out_full[cipherAmount];
-    //string F_R16[7];
 
     for(int i = 0; i < cipherAmount; i++)
     {
@@ -803,12 +725,12 @@ int main()
       K16 += sbox_Attack(R15, F_ER15, SBox_Out_full, numSBox);
     }
 
-    cout << bin2hex(K16) << endl;
+    //cout << bin2hex(K16) << endl;
     cout << "K16 regular: " << K16.size() << endl << K16 << endl;
     K16 = decompressKey(K16);
     cout << "K16 Decomp: " << K16.size() << endl << K16 << endl;
     K16 = INV_PC1(K16);
-    cout << "K16 Inv: " << endl << K16 << endl;
+    cout << "K16 Inv: " << K16.size() << endl << K16 << endl;
 
     int unknownKeyBits[8] = {13, 14, 18, 19, 50, 53, 57, 59};
     int currentGuess = 0;
@@ -822,10 +744,12 @@ int main()
       string cipherGuess = DES(plainText, Key);
       if(cipher.compare(cipherGuess) == 0)
         {
-          cout << "found the key" << endl;
+          cout << endl << "found the key" << endl;
           cout << Key << endl << hex2bin(Key) << endl;
           keyFound = true;
         }
     }
+    if(keyFound != true)
+     cout << "Key not found" << endl;
     return 0;
 }
